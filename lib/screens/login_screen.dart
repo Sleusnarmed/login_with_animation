@@ -11,6 +11,13 @@ class LoginScreen extends StatefulWidget {
 class _LoginScreenState extends State<LoginScreen> {
   bool passWordVisible = true;
 
+  // Logica animaciones
+  StateMachineController? controller;
+  SMIBool? isChecking;
+  SMIBool? isHandsUp;
+  SMITrigger? trigSucess;
+  SMITrigger? trigFail;
+
   @override
   Widget build(BuildContext context) {
     //Para obtener el tamaño de la pantalla
@@ -24,14 +31,34 @@ class _LoginScreenState extends State<LoginScreen> {
               SizedBox(
                 width: size.width,
                 height: 200,
-                child: const RiveAnimation.asset(
+                child: RiveAnimation.asset(
                   'assets/animated_login_character.riv',
+                  stateMachines: const ["Login Machine"],
+                  onInit: (artboard) {
+                    controller = StateMachineController.fromArtboard(
+                      artboard,
+                      "Login Machine",
+                    );
+                    if (controller == null) return;
+                    artboard.addController(controller!);
+                    isChecking = controller!.findSMI('isChecking');
+                    isHandsUp = controller!.findSMI('isHandsUp');
+                    trigSucess = controller!.findSMI('trigSucess');
+                    trigFail = controller!.findSMI('trigFail');
+                  },
                 ),
               ),
               // espacio entre el oso y el texto email
               const SizedBox(height: 10),
               // campo del texto del email
               TextField(
+                onChanged: (value) {
+                  if (isHandsUp != null) {
+                    isHandsUp!.change(false);
+                  }
+                  if (isChecking == null) return;
+                  isChecking!.change(true);
+                },
                 keyboardType: TextInputType.emailAddress,
                 decoration: InputDecoration(
                   hintText: "Email",
@@ -43,6 +70,13 @@ class _LoginScreenState extends State<LoginScreen> {
               ),
               const SizedBox(height: 10),
               TextField(
+                onChanged: (value) {
+                  if (isChecking != null) {
+                    isChecking!.change(false);
+                  }
+                  if (isHandsUp == null) return;
+                  isHandsUp!.change(true);
+                },
                 obscureText: passWordVisible,
                 obscuringCharacter: "*",
                 decoration: InputDecoration(
@@ -66,18 +100,45 @@ class _LoginScreenState extends State<LoginScreen> {
                   filled: true,
                 ),
               ),
-              const SizedBox(height: 20),
+              const SizedBox(height: 10),
               SizedBox(
-                width: double.infinity,
-                child: ElevatedButton(
-                  onPressed: () {},
-                  style: ElevatedButton.styleFrom(
-                    padding: const EdgeInsets.symmetric(vertical: 16),
-                    shape: RoundedRectangleBorder(
-                      borderRadius: BorderRadius.circular(12),
+                width: size.width,
+                child: const Text(
+                  "Forgot your password?",
+                  textAlign: TextAlign.right,
+                  style: TextStyle(decoration: TextDecoration.underline),
+                ),
+              ),
+              const SizedBox(height: 20),
+              MaterialButton(
+                minWidth: size.width,
+                height: 50,
+                color: Colors.purple,
+                shape: RoundedRectangleBorder(
+                  borderRadius: BorderRadius.circular(12),
+                ),
+                onPressed: () {},
+                child: Text("Login", style: TextStyle(color: Colors.white)),
+              ),
+              const SizedBox(height: 10),
+              SizedBox(
+                width: size.width,
+                child: Row(
+                  mainAxisAlignment: MainAxisAlignment.center,
+                  children: [
+                    const Text("Don't have an account?"),
+                    TextButton(
+                      onPressed: () {},
+                      child: const Text(
+                        "Register",
+                        style: TextStyle(
+                          color: Colors.black,
+                          fontWeight: FontWeight.bold,
+                          decoration: TextDecoration.underline,
+                        ),
+                      ),
                     ),
-                  ),
-                  child: const Text("Login", style: TextStyle(fontSize: 16)),
+                  ],
                 ),
               ),
             ],
